@@ -1,36 +1,57 @@
-module Semantica
-( nombres
-, todos
-, readHLista
-, mostrar
+module Semantica (
+  module Estructura
+, module Semantica
 ) where
 
 import Core
 import Estructura
-
-mostrar fun hlista
-    = do let ls = fun hlista
-         mapM_ print ls
+import Data.Maybe
+import Data.List
 
 -- mis funciones semanticas
+mostrar fun hlista
+    = do let ls = fun hlista
+         mapM_ putStrLn ls
+
+formatoListCtrl :: HLista -> [[String]]
+formatoListCtrl hl
+    = [ [ show num
+        , (maybe "" snd nombre)
+        , (maybe "" snd univ)
+        , (maybe "" snd email)
+        , (maybe "" snd nivel)
+        ]
+        | (HPersona nombre univ email nivel, num) <- zip hl [1..]
+      ]
+
 nombres :: HLista -> [String]
 nombres ls 
-    = [nombre | (HPersona (Just nombre) _ _ _) <- ls]
+    = [nombre | (HPersona (Just (_,nombre)) _ _ _) <- ls]
+
+lista :: HLista -> [String]
+lista ls 
+    = let titulos = "Nombre \t\tUniversidad \t\tEmail \t\tNivel"
+          cuerpo  = [ ((maybe "" snd nombre) ++ "\t\t" ++
+                       (maybe "" snd univ)   ++ "\t\t" ++
+                       (maybe "" snd email)  ++ "\t\t" ++
+                       (maybe "" snd nivel))
+                    | (HPersona nombre univ email nivel) <- ls]
+      in titulos : cuerpo
 
 todos :: HLista -> [(String, String, String, String)]
 todos ls 
     = [ (nombre, univ, email, nivel)
-      | (HPersona (Just nombre)
-                  (Just univ)
-                  (Just email)
-                  (Just nivel)) <- ls]
+      | (HPersona (Just (_,nombre))
+                  (Just (_,univ))
+                  (Just (_,email))
+                  (Just (_,nivel))) <- ls]
 
+-- HLista writers
+writeHLista :: HLista -> FilePath -> IO()
+writeHLista hl fn = do let str = unlines $ map show hl
+                       writeFile fn str 
 
-
--- test
-hlist :: HLista
-hlist = (HPersona (Just "Carlos Gomez")   (Just "UMSS") (Just "carliros.g@gmail.com")  (Just "Medio"))
-      : (HPersona (Just "Antonio Mamani") (Just "UMSS") (Just "antonio.mqg@gmail.com") (Just "Medio"))
-      : (HPersona Nothing                 (Just "UMSS") (Just "nothing@gmail.com")     (Just "Avanzado"))
-      : []
-
+readHLista :: FilePath -> IO HLista
+readHLista file 
+    = do input <- readFile file
+         parseHLista input

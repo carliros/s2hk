@@ -1,17 +1,16 @@
 module Core 
-( readHLista
+( parseHLista
 ) where
 
 import Text.ParserCombinators.UU
 import Data.Char
 import Estructura
 
-readHLista :: FilePath -> IO HLista
-readHLista file 
-    = do input <- readFile file
-         hlist <- parseString pRoot input
-         return hlist
+-- Core interface
+parseHLista :: String -> IO HLista
+parseHLista = parseString pRoot
 
+-- Parser Combinators
 pRoot :: Parser HLista
 pRoot = pInutil
             *> pListSep_ng pInutil1 pHPersona <*
@@ -35,8 +34,8 @@ pEMail = pMaybe (pField "Correo_Electronico")
 pNivel :: Parser Info
 pNivel = pMaybe (pField "Conocimiento_en_Programación_Funcional")
 
-pField :: String -> Parser String
-pField fd = pToken fd *> pSimboloAmb ":" *> pDato
+pField :: String -> Parser (String,String)
+pField fd = (,) <$> pToken fd <* pSimboloAmb ":" <*> pDato
 
 pDato :: Parser String
 pDato = unwords <$> pListSep_ng pSpaces1 pPalabra
@@ -63,7 +62,6 @@ pSimbolo sim = pToken sim
 
 pSimboloAmb :: String -> Parser String
 pSimboloAmb sim = pInutil *> pToken sim <* pInutil
-
 
 -- parser interface
 parseString :: Parser a -> String -> IO a
