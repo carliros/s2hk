@@ -267,11 +267,7 @@ crearMenuToolBar f dbfile db lb lcItem barraFile barraDB
          toolMenu tbar melim  "Eliminar" "img/eliminar.png" []
          -}
     where showLista ms = do bool <- get ms checked
-                            if bool
-                             then do set lb [visible := True]
-                                     set f [layout := fill $ widget lb]
-                                     repaint f
-                             else do set lb [visible := False]
-                                     set f [layout := fill $ widget lb]
-                                     repaint f
+                            set lb [visible := bool ]
+                            set f [layout := fill $ widget lb]
+                            repaint f
 
